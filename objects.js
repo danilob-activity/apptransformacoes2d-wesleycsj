@@ -6,7 +6,7 @@ function Box(center = [0, 0, 1], height = 50, width = 50) {
     this.center = center;
     this.height = height;
     this.width = width;
-    this.T = identity(); //matriz 3x3 de translação 
+    this.T = identity(); //matriz 3x3 de translação
     this.R = identity(); //matriz 3x3 de rotação
     this.S = identity(); //matriz 3x3 de escala
     this.fill = white; //cor de preenchimento -> aceita cor hex, ex.: this.fill = "#4592af"
@@ -24,10 +24,14 @@ Box.prototype.setTranslate = function(x, y) {
 }
 
 //TODO: Aplicar matriz de rotação
-Box.prototype.setRotate = function(theta) {}
+Box.prototype.setRotate = function(theta) {
+    this.R = rotate(theta);
+}
 
 //TODO: Aplicar matriz de escala
-Box.prototype.setScale = function(x, y) {}
+Box.prototype.setScale = function(x, y) {
+    this.S = scale(x, y);
+}
 
 Box.prototype.draw = function(canvas = ctx) { //requer o contexto de desenho
     //pega matriz de tranformação de coordenadas canônicas para coordenadas do canvas
@@ -65,3 +69,66 @@ Box.prototype.draw = function(canvas = ctx) { //requer o contexto de desenho
 
 //TODO: Faça o objeto Circulo implementando as mesmas funcões e atributos que a caixa possui
 //      porém os valores básicos são o centro e o raio do circulo
+
+function Circle(center = [0, 0, 1],width = 50,height = 50, radiusX = 50, radiusY = 50) {
+    this.center = center;
+    this.radiusX = radiusX;
+    this.radiusY = radiusY;
+    this.width = 50;
+    this.height = 50
+    this.T = identity(); //matriz 3x3 de translação
+    this.R = identity(); //matriz 3x3 de rotação
+    this.S = identity(); //matriz 3x3 de escala
+    this.fill = white; //cor de preenchimento -> aceita cor hex, ex.: this.fill = "#4592af"
+    this.stroke = black; //cor da borda -> aceita cor hex, ex.: this.stroke = "#a34a28"
+    this.name = "";
+}
+
+Circle.prototype.draw = function(canvas = ctx) { //requer o contexto de desenho
+    //pega matriz de tranformação de coordenadas canônicas para coordenadas do canvas
+    var M = transformCanvas(WIDTH, HEIGHT);
+    var Mg = mult(M, mult(mult(this.R, this.S), this.T));
+    canvas.lineWidth = 2; //largura da borda
+    canvas.strokeStyle = this.stroke;
+    canvas.fillStyle = this.fill;
+    //criação dos pontos do retângulo de acordo com o centro, largura e altura
+    var points = [];
+    points.push([this.center[0] + this.width / 2, this.center[1] + this.height / 2, 1]);
+    points.push([this.center[0] - this.width / 2, this.center[1] + this.height / 2, 1]);
+    points.push([this.center[0] - this.width / 2, this.center[1] - this.height / 2, 1]);
+    points.push([this.center[0] + this.width / 2, this.center[1] - this.height / 2, 1]);
+
+    ctx.beginPath();
+    ctx.ellipse(this.T[0][2] + this.width,this.T[1][2] + this.height, this.S[0][0] * this.radiusX,this.S[1][1] * this.radiusY, 2 * Math.PI, 0, 2 * Math.PI);
+
+    canvas.fill(); //aplica cor de preenchimento
+    canvas.strokeStyle = this.stroke;
+    canvas.stroke(); //aplica cor de contorno
+
+    //desenho do nome
+    canvas.beginPath();
+    canvas.fillStyle = this.stroke;
+    canvas.font = "16px Courier";
+    var center = multVec(Mg, this.center);
+    canvas.fillText(this.name, center[0] - this.name.length * 16 / 3, center[1] + 3); //deixa o texto mais ou menos centralizado no meio da caixa
+
+}
+
+//TODO: Aplicar matriz de escala
+Circle.prototype.setName = function(name) {
+    this.name = name;
+}
+
+Circle.prototype.setTranslate = function(x, y) {
+    this.T = translate(x, y);
+}
+
+//TODO: Aplicar matriz de rotação
+Circle.prototype.setRotate = function(theta) {
+    this.R = rotate(theta);
+}
+
+//TODO: Aplicar matriz de escala
+Circle.prototype.setScale = function(x, y) {
+    this.S = scale(x, y);
+}
